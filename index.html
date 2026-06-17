@@ -297,12 +297,13 @@
                 let isMainTitleRow = false;
                 let finalTitleText = "";
 
-                // 🌟 EXTREME CLEANER: Row ke kisi bhi kone me agar text match hoga, toh ye use lock kar dega
+                // 🌟 ADVANCED MULTI-MONTH CLEANER ENGINE
+                // Check if any cell starts with 'BO WISE' or 'SO WISE' or matches keywords case-insensitively
                 for (let i = 0; i < row.length; i++) {
-                    let cellVal = row[i] ? row[i].trim() : "";
-                    if (cellVal.toUpperCase().includes("BO WISE DETAILED REPORT") || cellVal.toUpperCase().includes("SO WISE DETAILED REPORT")) {
+                    let cellVal = row[i] ? row[i].trim().toUpperCase() : "";
+                    if (cellVal.startsWith("BO WISE") || cellVal.startsWith("SO WISE") || cellVal.includes("DETAILED REPORT")) {
                         isMainTitleRow = true;
-                        finalTitleText = cellVal;
+                        finalTitleText = row[i].trim(); // Extract exact original text
                         break;
                     }
                 }
@@ -320,11 +321,10 @@
 
                 html += `<tr${rowClass}>`;
                 if (isMainTitleRow) {
-                    // Agar predefined text na mila ho toh backup nikalna
                     if (!finalTitleText) {
                         finalTitleText = row.find(v => v && v.trim() !== "") || "Detailed Report";
                     }
-                    // Pure row ko 1 single column banakar overwrite kar dena
+                    // Wipe duplicate overflow data horizontally across all months instantly
                     html += `<td colspan="${globalHeaders.length}" style="text-align: center; font-weight: bold;">${finalTitleText}</td>`;
                 } else {
                     globalHeaders.forEach((_, idx) => {
