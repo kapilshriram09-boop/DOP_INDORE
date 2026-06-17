@@ -43,7 +43,6 @@
     </div>
 
     <div class="filter-container">
-        <!-- 1. Category -->
         <div class="filter-group">
             <label for="categorySelect">Select Report / Operation Type:</label>
             <select id="categorySelect" onchange="handleCategoryChange()">
@@ -57,7 +56,6 @@
             </select>
         </div>
 
-        <!-- 2. Month -->
         <div class="filter-group">
             <label id="monthLabel" for="monthSelect">Select Month:</label>
             <select id="monthSelect" onchange="loadSelectedFile()">
@@ -67,7 +65,6 @@
             </select>
         </div>
 
-        <!-- 3. Division Filter -->
         <div class="filter-group">
             <label for="divisionSelect">Filter by Division:</label>
             <select id="divisionSelect" onchange="applyHierarchyFilter()" disabled>
@@ -75,7 +72,6 @@
             </select>
         </div>
 
-        <!-- 4. Sub-Division Filter -->
         <div class="filter-group">
             <label for="subDivSelect">Filter by Sub-Division:</label>
             <select id="subDivSelect" onchange="applyHierarchyFilter()" disabled>
@@ -107,9 +103,10 @@
         let dynamicIdxSubDiv = 1;    
         let dynamicIdxBookingCount = -1; 
 
+        // 🌟 FIXED: Added 'ID DIVISION' into the official master core mapping to handle RMS separation cleanly
         const indoreRegionDivisions = [
             "INDORE CITY", "INDORE MFL", "KHANDWA", "MANDSAUR", 
-            "RATLAM", "SEHORE", "UJJAIN", "RMS ID"
+            "RATLAM", "SEHORE", "UJJAIN", "RMS ID", "ID DIVISION"
         ];
 
         const sheetLinks = {
@@ -195,10 +192,9 @@
                 dynamicIdxSubDiv = 1;
                 dynamicIdxBookingCount = -1;
 
-                // 🌟 TARGETING ONLY THE ACTUAL BOOKING COUNT HEADER
                 globalHeaders.forEach((h, idx) => {
                     let headName = h.toUpperCase().trim();
-                    if (headName === "DIVISION") dynamicIdxDivision = idx;
+                    if (headName === "DIVISION" || headName.includes("DIVISION NAME")) dynamicIdxDivision = idx;
                     if (headName === "NAME OF SD" || headName.includes("SUB DIVISION")) dynamicIdxSubDiv = idx;
                     if (headName === "TOTAL BOOKING" || headName === "TOTAL_BOOKING" || headName.includes("SUM OF TOTAL") || headName === "BOOKING COUNT") {
                         dynamicIdxBookingCount = idx;
@@ -211,10 +207,10 @@
                     let targetText = "";
 
                     for (let i = 0; i < row.length; i++) {
-                        let cText = row[i] ? row[i].trim() : "";
-                        if (cText.toUpperCase().includes("BO WISE") || cText.toUpperCase().includes("SO WISE") || cText.toUpperCase().includes("DETAILED REPORT") || cText.toUpperCase().includes("OFFICE WISE")) {
+                        let cellVal = row[i] ? row[i].trim() : "";
+                        if (cellVal.toUpperCase().includes("BO WISE") || cellVal.toUpperCase().includes("SO WISE") || cellVal.toUpperCase().includes("DETAILED REPORT") || cellVal.toUpperCase().includes("OFFICE WISE")) {
                             isTitleRow = true;
-                            targetText = cText;
+                            targetText = cellVal;
                             break;
                         }
                     }
@@ -225,8 +221,10 @@
                         clonedRow[0] = targetText; 
                         clonedRow._isProcessedTitle = true;
                     } else {
-                        let divVal = row[dynamicIdxDivision] ? row[dynamicIdxDivision].trim() : "";
-                        let matchedDiv = indoreRegionDivisions.find(d => divVal.toUpperCase().startsWith(d));
+                        let divVal = row[dynamicIdxDivision] ? row[dynamicIdxDivision].trim().toUpperCase() : "";
+                        
+                        // 🌟 FIXED: Exact structural check to intercept 'ID DIVISION' safely before running fallbacks
+                        let matchedDiv = indoreRegionDivisions.find(d => divVal.startsWith(d));
                         if (matchedDiv) {
                             currentRunningDivision = matchedDiv;
                         }
@@ -330,7 +328,6 @@
                     if (rDiv.includes("TOTAL") || rSub.includes("TOTAL")) return false;
                 }
 
-                // 🌟 EXCLUSIVE ISOLATOR: Evaluates '0' strictly on the booking column only!
                 if (category.endsWith("_nil")) {
                     if (dynamicIdxBookingCount !== -1) {
                         let bookingValue = row[dynamicIdxBookingCount] ? row[dynamicIdxBookingCount].toString().trim() : "";
