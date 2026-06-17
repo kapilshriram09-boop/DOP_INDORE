@@ -3,55 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open Source Information Portal - Indore Region</title>
+    <title>Advanced Multi-Level Filter Portal - Indore Region</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; min-height: 95vh; }
-        .header { background-color: #d32f2f; color: white; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .header p { margin: 5px 0 0 0; font-size: 16px; opacity: 0.9; font-weight: 500; }
-        
-        .filter-container { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-        .filter-group { display: flex; flex-direction: column; gap: 5px; }
-        .filter-group label { font-weight: bold; font-size: 14px; color: #555; }
-        select { padding: 8px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; min-width: 260px; background-color: #fff; cursor: pointer; height: 40px; }
-        select:disabled { background-color: #eee; cursor: not-allowed; color: #aaa; }
-        
-        .download-btn { background-color: #2e7d32; color: white; border: none; padding: 0 20px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-left: auto; transition: background 0.2s; height: 40px; line-height: 40px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .download-btn:hover { background-color: #1b5e20; }
-        .download-btn:disabled { background-color: #cccccc; cursor: not-allowed; }
+        :root {
+            --primary-color: #1a237e; /* Royal Postal Navy Blue */
+            --accent-color: #ff6f00;  /* Premium Amber */
+            --bg-color: #f5f7fa;
+            --text-color: #2c3e50;
+        }
 
-        .table-wrapper { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; min-height: 250px; flex: 1; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; table-layout: auto; }
-        th, td { padding: 12px 15px; border: 1px solid #ddd; font-size: 14px; white-space: nowrap; }
-        th { background-color: #1976d2; color: white; font-weight: 600; position: sticky; top: 0; }
-        tr:hover { background-color: #f8f9fa; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 95vh; 
+        }
+
+        .header { 
+            background: linear-gradient(135deg, #d32f2f 0%, #9a0007 100%); /* Indian Post Red */
+            color: white; 
+            padding: 25px; 
+            text-align: center; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        .header h1 { margin: 0; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .header p { margin: 8px 0 0 0; font-size: 16px; opacity: 0.95; font-weight: 500; }
         
-        .status-message { text-align: center; font-size: 16px; color: #666; padding: 50px; font-style: italic; font-weight: 500; }
-        .footer { text-align: center; margin-top: 40px; padding: 15px; border-top: 1px solid #ddd; font-size: 14px; color: #444; font-weight: 500; background-color: #fff; border-radius: 4px; box-shadow: 0 -1px 3px rgba(0,0,0,0.02); }
+        .filter-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03); 
+            margin-bottom: 20px; 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; }
+        .filter-group label { font-weight: 600; font-size: 13px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        select { 
+            padding: 10px 14px; 
+            font-size: 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px; 
+            background-color: #fff; 
+            cursor: pointer; 
+            height: 42px; 
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1); }
+        select:disabled { background-color: #f1f5f9; cursor: not-allowed; color: #94a3b8; }
+        
+        .stats-counter { font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 10px; padding-left: 5px; display: none; }
+        
+        .download-btn { 
+            background-color: #16a34a; 
+            color: white; 
+            border: none; 
+            padding: 0 24px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            height: 42px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+        }
+        .download-btn:hover:not(:disabled) { background-color: #15803d; transform: translateY(-1px); }
+        .download-btn:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; }
+
+        .table-wrapper { 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04); 
+            overflow-x: auto; 
+            min-height: 250px; 
+            flex: 1; 
+            margin-top: 5px; 
+            border: 1px solid #e2e8f0;
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; font-size: 14px; white-space: nowrap; }
+        th { background-color: var(--primary-color); color: white; font-weight: 600; position: sticky; top: 0; font-size: 13px; z-index: 10; }
+        tr:hover { background-color: #f8fafc; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        
+        .status-message { text-align: center; padding: 60px 20px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--accent-color); border-radius: 50%; margin: 0 auto 20px auto; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 16px; font-weight: 600; color: var(--primary-color); }
+        .quote-box { font-size: 14px; color: #475569; font-style: italic; max-width: 600px; margin: 15px auto 0 auto; background: #fff8f1; padding: 10px 15px; border-left: 4px solid var(--accent-color); border-radius: 4px; }
+        
+        .footer { text-align: center; margin-top: 40px; padding: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #475569; font-weight: 500; background-color: #fff; border-radius: 8px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Open Source Information Portal</h1>
-        <p>Indore Region - Department of Posts</p>
+        <p>Indore Region - Department of Posts (Advanced Dashboard)</p>
     </div>
 
+    <!-- 🌟 4 Levels Filtering System -->
     <div class="filter-container">
+        <!-- 1. Category Dropdown -->
         <div class="filter-group">
-            <label for="categorySelect">Select Report / Operation Type:</label>
+            <label for="categorySelect">1. Select Report Type:</label>
             <select id="categorySelect" onchange="handleCategoryChange()">
                 <option value="combine">Speed Post / Parcel (Both Combine)</option>
                 <option value="speedpost">Speed Post (Mail Operation)</option>
                 <option value="parcel">Parcel</option>
-                <option value="revenue">Revenue Data (MO/Parcel/IRGB) [Master Sheet]</option>
-                <option value="booking">Total Booking Count (MO/Parcel/IRGB) [Master Sheet]</option>
+                <option value="revenue">Revenue Data (MO/Parcel/IRGB) [Master]</option>
+                <option value="booking">Total Booking Count (MO/Parcel/IRGB) [Master]</option>
             </select>
         </div>
 
+        <!-- 2. Month Dropdown -->
         <div class="filter-group">
-            <label id="monthLabel" for="monthSelect">Select Month:</label>
+            <label id="monthLabel" for="monthSelect">2. Select Month:</label>
             <select id="monthSelect" onchange="loadSelectedFile()">
                 <option value="april">April</option>
                 <option value="may">May</option>
@@ -59,11 +141,33 @@
             </select>
         </div>
 
-        <button id="downloadBtn" class="download-btn" onclick="downloadCSV()" disabled>📥 Download Data for Excel</button>
+        <!-- 3. Division Filter -->
+        <div class="filter-group">
+            <label for="divisionSelect">3. Filter by Division:</label>
+            <select id="divisionSelect" onchange="onDivisionChange()" disabled>
+                <option value="">-- All Divisions (Full Region) --</option>
+            </select>
+        </div>
+
+        <!-- 4. Sub-Division Filter -->
+        <div class="filter-group">
+            <label for="subDivSelect">4. Filter by Sub-Division:</label>
+            <select id="subDivSelect" onchange="onSubDivisionChange()" disabled>
+                <option value="">-- All Sub-Divisions --</option>
+            </select>
+        </div>
+
+        <button id="downloadBtn" class="download-btn" onclick="downloadFilteredCSV()" disabled>📥 Download Excel</button>
     </div>
 
+    <div id="statsCounter" class="stats-counter"></div>
+
     <div class="table-wrapper">
-        <div id="status-msg" class="status-message">Data load ho raha hai, kripya intezar karein...</div>
+        <div id="status-container" class="status-message">
+            <div class="spinner"></div>
+            <div class="loading-text">Google Sheet se live data fetch ho raha hai...</div>
+            <div class="quote-box">"Indore Region ki shaan, hum sab ka kaam! Chaliye aaj ka din aur behtar banate hain."</div>
+        </div>
         <div id="table-container"></div>
     </div>
 
@@ -72,30 +176,27 @@
     </div>
 
     <script>
-        let currentRawCSVText = ""; 
-        let currentFileName = "report.csv";
-
-        // ✅ SARE 11 LIVE TABS KE LINKS PERFECTLY INTEGRATE HO CHUKE HAIN
         const sheetLinks = {
-            // April Links
             "april_combine": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=563942460",
             "april_speedpost": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2046604428",
             "april_parcel": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1001941191",
             
-            // May Links
             "may_combine": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1030053545",
             "may_speedpost": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1018219322",
             "may_parcel": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=645073986",
             
-            // June Links
             "june_combine": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=530358817",
             "june_speedpost": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=287890525",
             "june_parcel": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2068951621",
             
-            // Master Links
             "master_revenue": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1335977131",
             "master_booking": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2092560953"
         };
+
+        let globalHeaders = [];
+        let sheetRows = [];      
+        let filteredRows = [];   
+        let idxDivision = -1, idxSubDiv = -1;
 
         function parseCSV(text) {
             let lines = text.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
@@ -110,114 +211,193 @@
         function handleCategoryChange() {
             const category = document.getElementById('categorySelect').value;
             const monthSelect = document.getElementById('monthSelect');
-            
-            if (category === "revenue" || category === "booking") {
-                monthSelect.disabled = true;
-            } else {
-                monthSelect.disabled = false;
-            }
+            monthSelect.disabled = (category === "revenue" || category === "booking");
             loadSelectedFile();    
         }
 
         async function loadSelectedFile() {
             const month = document.getElementById('monthSelect').value;
             const category = document.getElementById('categorySelect').value;
-            const statusMsg = document.getElementById('status-msg');
+            const statusContainer = document.getElementById('status-container');
             const tableContainer = document.getElementById('table-container');
-            const downloadBtn = document.getElementById('downloadBtn');
+            const dlBtn = document.getElementById('downloadBtn');
+            const statsCounter = document.getElementById('statsCounter');
+            
+            document.getElementById('divisionSelect').innerHTML = '<option value="">-- All Divisions (Full Region) --</option>';
+            document.getElementById('subDivSelect').innerHTML = '<option value="">-- All Sub-Divisions --</option>';
+            document.getElementById('divisionSelect').disabled = true;
+            document.getElementById('subDivSelect').disabled = true;
 
-            let key = "";
-            if (category === "revenue" || category === "booking") {
-                key = `master_${category}`;
-                currentFileName = `master_${category}.csv`;
-            } else {
-                key = `${month}_${category}`;
-                currentFileName = `${month}_${category}.csv`;
-            }
-
+            let key = (category === "revenue" || category === "booking") ? `master_${category}` : `${month}_${category}`;
             const sheetURL = sheetLinks[key];
             
-            statusMsg.style.display = 'block';
-            statusMsg.style.color = '#666';
-            statusMsg.innerText = "Google Sheet se fresh data fetch ho raha hai...";
+            statusContainer.style.display = 'block';
             tableContainer.innerHTML = '';
-            downloadBtn.disabled = true;
-
-            if (!sheetURL) {
-                statusMsg.style.color = '#d32f2f';
-                statusMsg.innerHTML = `⚠️ Data Unloaded: Is configuration ke liye link nahi mila.`;
-                return;
-            }
+            statsCounter.style.display = 'none';
+            dlBtn.disabled = true;
 
             try {
-                // Cache bypass logic taaki hamesha real-time update mile
                 const response = await fetch(sheetURL + '&t=' + new Date().getTime());
-                
                 if (!response.ok) throw new Error("Fetch failed");
-
                 const csvText = await response.text();
-                currentRawCSVText = csvText; 
                 
                 const parsedData = parseCSV(csvText);
-
-                if (parsedData.length === 0 || (parsedData.length === 1 && parsedData[0][0] === '')) {
-                    statusMsg.innerText = "Is Google Sheet Tab mein koi data nahi mila.";
+                if(parsedData.length === 0 || (parsedData.length === 1 && parsedData[0][0] === '')) {
+                    statusContainer.innerHTML = "<div class='loading-text' style='color:#d32f2f;'>⚠️ Is tab mein koi data nahi mila.</div>";
                     return;
                 }
 
-                statusMsg.style.display = 'none';
-                renderTable(parsedData);
-                downloadBtn.disabled = false; 
+                globalHeaders = parsedData[0];
+                sheetRows = parsedData.slice(1);
+
+                // Find dynamic columns cleanly (Fixing letter cases)
+                idxDivision = -1; idxSubDiv = -1;
+                globalHeaders.forEach((h, i) => {
+                    let head = h.toUpperCase().trim();
+                    if(head === "DIVISION") idxDivision = i;
+                    if(head === "NAME OF SD" || head.includes("SUB DIVISION") || head.includes("SUB-DIVISION")) idxSubDiv = i;
+                });
+
+                statusContainer.style.display = 'none';
+                
+                // Populate Dropdowns while filtering out Totals/Grand totals row
+                if(idxDivision !== -1) {
+                    populateDivisions();
+                }
+
+                filteredRows = sheetRows.filter(row => {
+                    let divVal = row[idxDivision] ? row[idxDivision].toUpperCase() : "";
+                    return divVal && !divVal.includes("TOTAL") && !divVal.includes("GRAND");
+                });
+
+                renderTable();
 
             } catch (error) {
                 console.error(error);
-                statusMsg.style.display = 'block';
-                statusMsg.style.color = '#d32f2f';
-                statusMsg.innerHTML = `⚠️ Live Connection Error: Google Sheet se data sampark nahi ho pa raha hai.<br><span style="font-size:13px; color:#555;">Kripya ek baar internet connection check karein.</span>`;
-                tableContainer.innerHTML = '';
-                downloadBtn.disabled = true;
+                statusContainer.innerHTML = "<div class='loading-text' style='color:#d32f2f;'>⚠️ Connection Error: Live Sheet data load nahi ho saka.</div>";
             }
         }
 
-        function renderTable(dataMatrix) {
+        function populateDivisions() {
+            const divSel = document.getElementById('divisionSelect');
+            let rawDivs = sheetRows.map(r => r[idxDivision] ? r[idxDivision].trim() : "").filter(Boolean);
+            
+            // Filter out summary/total rows from unique list
+            let cleanDivs = [...new Set(rawDivs)].filter(d => {
+                let upperD = d.toUpperCase();
+                return !upperD.includes("TOTAL") && !upperD.includes("GRAND");
+            }).sort();
+            
+            divSel.innerHTML = '<option value="">-- All Divisions (Full Region) --</option>';
+            cleanDivs.forEach(d => { divSel.innerHTML += `<option value="${d}">${d}</option>`; });
+            divSel.disabled = false;
+        }
+
+        function onDivisionChange() {
+            const selectedDivision = document.getElementById('divisionSelect').value;
+            const subSel = document.getElementById('subDivSelect');
+            
+            subSel.innerHTML = '<option value="">-- All Sub-Divisions --</option>';
+            subSel.disabled = true;
+
+            if(selectedDivision && idxSubDiv !== -1) {
+                let rawSubDivs = sheetRows
+                    .filter(r => r[idxDivision] && r[idxDivision].trim().toUpperCase() === selectedDivision.toUpperCase())
+                    .map(r => r[idxSubDiv] ? r[idxSubDiv].trim() : "").filter(Boolean);
+
+                let cleanSubDivs = [...new Set(rawSubDivs)].filter(s => {
+                    let upperS = s.toUpperCase();
+                    return !upperS.includes("TOTAL") && !upperS.includes("GRAND");
+                }).sort();
+
+                cleanSubDivs.forEach(s => { subSel.innerHTML += `<option value="${s}">${s}</option>`; });
+                subSel.disabled = false;
+            }
+            
+            applyFilter();
+        }
+
+        function onSubDivisionChange() {
+            applyFilter();
+        }
+
+        function applyFilter() {
+            const dVal = document.getElementById('divisionSelect').value.toUpperCase().trim();
+            const sVal = document.getElementById('subDivSelect').value.toUpperCase().trim();
+
+            filteredRows = sheetRows.filter(row => {
+                let rDiv = row[idxDivision] ? row[idxDivision].toUpperCase().trim() : "";
+                let rSub = row[idxSubDiv] ? row[idxSubDiv].toUpperCase().trim() : "";
+                
+                // Keep totals/grand totals out of main filter
+                if(rDiv.includes("TOTAL") || rDiv.includes("GRAND")) return false;
+
+                if(dVal && rDiv !== dVal) return false;
+                if(sVal && rSub !== sVal) return false;
+                return true;
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
             const container = document.getElementById('table-container');
-            const headers = dataMatrix[0];
-            const rows = dataMatrix.slice(1);
+            const statsCounter = document.getElementById('statsCounter');
+            const dlBtn = document.getElementById('downloadBtn');
+
+            if(filteredRows.length === 0) {
+                container.innerHTML = "<div class='status-message' style='color:#666;'>Is selection ke liye koi record nahi mila.</div>";
+                statsCounter.style.display = 'none';
+                dlBtn.disabled = true;
+                return;
+            }
 
             let html = '<table><thead><tr>';
-            headers.forEach(header => {
-                html += `<th>${header || ''}</th>`;
-            });
+            globalHeaders.forEach(h => { html += `<th>${h || ''}</th>`; });
             html += '</tr></thead><tbody>';
 
-            rows.forEach(row => {
-                if(row.length === 1 && row[0] === '') return;
+            filteredRows.forEach(row => {
                 html += '<tr>';
-                headers.forEach((_, idx) => {
-                    html += `<td>${row[idx] !== undefined ? row[idx] : ''}</td>`;
-                });
+                globalHeaders.forEach((_, idx) => { html += `<td>${row[idx] !== undefined ? row[idx] : ''}</td>`; });
                 html += '</tr>';
             });
-
             html += '</tbody></table>';
+            
             container.innerHTML = html;
+            statsCounter.innerText = `📊 Records Displayed: ${filteredRows.length}`;
+            statsCounter.style.display = 'block';
+            dlBtn.disabled = false;
         }
 
-        function downloadCSV() {
-            if (!currentRawCSVText) return;
+        function downloadFilteredCSV() {
+            if (filteredRows.length === 0) return;
+            
+            let csvContent = globalHeaders.join(",") + "\n";
+            filteredRows.forEach(row => {
+                let escapedRow = row.map(v => {
+                    let str = v ? v.toString() : "";
+                    if(str.includes(",") || str.includes('"') || str.includes("\n")) {
+                        str = '"' + str.replace(/"/g, '""') + '"';
+                    }
+                    return str;
+                });
+                csvContent += escapedRow.join(",") + "\n";
+            });
+
             const BOM = "\uFEFF";
-            const blob = new Blob([BOM + currentRawCSVText], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", currentFileName);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+            const month = document.getElementById('monthSelect').value;
+            const cat = document.getElementById('categorySelect').value;
+            const div = document.getElementById('divisionSelect').value || "FullRegion";
+            
+            link.setAttribute("href", URL.createObjectURL(blob));
+            link.setAttribute("download", `${month}_${cat}_${div}_Report.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         window.onload = loadSelectedFile;
