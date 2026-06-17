@@ -49,6 +49,8 @@
                 <option value="combine">Speed Post / Parcel (Both Combine)</option>
                 <option value="speedpost">Speed Post (Mail Operation)</option>
                 <option value="parcel">Parcel</option>
+                <option value="combine_nil">Speed Post/Parcel Combined Nil booking office List 🔴</option>
+                <option value="parcel_nil">Parcel Nil booking office list 🔴</option>
                 <option value="revenue">Revenue Data (MO/Parcel/IRGB) [Master Sheet]</option>
                 <option value="booking">Total Booking Count (MO/Parcel/IRGB) [Master Sheet]</option>
             </select>
@@ -97,14 +99,15 @@
         let loadedSheetRows = [];
         let currentlyFilteredRows = [];
         
-        const idxDivision = 0;  
-        const idxSubDiv = 1;    
+        const idxDivision = 0;  // Column A
+        const idxSubDiv = 1;    // Column B
 
         const indoreRegionDivisions = [
             "INDORE CITY", "INDORE MFL", "KHANDWA", "MANDSAUR", 
             "RATLAM", "SEHORE", "UJJAIN", "RMS ID"
         ];
 
+        // 🌟 UPDATED: Added your exact GID endpoints for both master office tracking logs
         const sheetLinks = {
             "april_combine": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=563942460",
             "april_speedpost": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2046604428",
@@ -119,7 +122,11 @@
             "june_parcel": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2068951621",
             
             "master_revenue": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1335977131",
-            "master_booking": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2092560953"
+            "master_booking": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=2092560953",
+            
+            // New office wise masters loaded explicitly
+            "master_office_combine": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=405003898",
+            "master_office_parcel": "https://docs.google.com/spreadsheets/d/1yHMeINZIiVzUZmDHkujPAdORTQjIe448Ex2AILKkwh0/export?format=csv&gid=1473241484"
         };
 
         function parseCSV(text) {
@@ -135,7 +142,9 @@
         function handleCategoryChange() {
             const category = document.getElementById('categorySelect').value;
             const monthSelect = document.getElementById('monthSelect');
-            monthSelect.disabled = (category === "revenue" || category === "booking");
+            
+            // Disable month lookup for any master or specialized dynamic analytics sheet
+            monthSelect.disabled = (category === "revenue" || category === "booking" || category === "combine_nil" || category === "parcel_nil");
             loadSelectedFile();    
         }
 
@@ -152,7 +161,15 @@
             document.getElementById('divisionSelect').disabled = true;
             subDivSelect.disabled = true;
 
-            let key = (category === "revenue" || category === "booking") ? `master_${category}` : `${month}_${category}`;
+            let key = "";
+            if (category === "revenue" || category === "booking") {
+                key = `master_${category}`;
+            } else if (category === "combine_nil" || category === "parcel_nil") {
+                key = `master_office_${category.replace('_nil', '')}`; // Dynamic redirection to naye lists
+            } else {
+                key = `${month}_${category}`;
+            }
+
             currentFileName = `${key}.csv`;
             const sheetURL = sheetLinks[key];
             
@@ -174,16 +191,34 @@
 
                 let currentRunningDivision = "";
                 loadedSheetRows = rawRows.map(row => {
-                    let divVal = row[idxDivision] ? row[idxDivision].trim() : "";
-                    
-                    let matchedDiv = indoreRegionDivisions.find(d => divVal.toUpperCase().startsWith(d));
-                    if (matchedDiv) {
-                        currentRunningDivision = matchedDiv;
+                    let isTitleRow = false;
+                    let targetText = "";
+
+                    for (let i = 0; i < row.length; i++) {
+                        let cText = row[i] ? row[i].trim() : "";
+                        if (cText.toUpperCase().includes("BO WISE") || cText.toUpperCase().includes("SO WISE") || cText.toUpperCase().includes("DETAILED REPORT") || cText.toUpperCase().includes("OFFICE WISE")) {
+                            isTitleRow = true;
+                            targetText = cText;
+                            break;
+                        }
                     }
-                    
-                    let clonedRow = [...row];
-                    if ((!divVal || divVal === "") && currentRunningDivision !== "" && !isStructuralRow(row[idxDivision], row[idxSubDiv])) {
-                        clonedRow[idxDivision] = currentRunningDivision;
+
+                    let clonedRow = [];
+                    if (isTitleRow) {
+                        clonedRow = new Array(globalHeaders.length).fill("");
+                        clonedRow[0] = targetText; 
+                        clonedRow._isProcessedTitle = true;
+                    } else {
+                        let divVal = row[idxDivision] ? row[idxDivision].trim() : "";
+                        let matchedDiv = indoreRegionDivisions.find(d => divVal.toUpperCase().startsWith(d));
+                        if (matchedDiv) {
+                            currentRunningDivision = matchedDiv;
+                        }
+                        
+                        clonedRow = [...row];
+                        if ((!divVal || divVal === "") && currentRunningDivision !== "" && !isStructuralRow(row[idxDivision], row[idxSubDiv])) {
+                            clonedRow[idxDivision] = currentRunningDivision;
+                        }
                     }
                     return clonedRow;
                 });
@@ -196,8 +231,7 @@
                     subDivSelect.disabled = true;
                 }
 
-                currentlyFilteredRows = loadedSheetRows;
-                renderTable();
+                applyHierarchyFilter(); 
                 downloadBtn.disabled = false; 
 
             } catch (error) {
@@ -251,7 +285,7 @@
             let d = rDiv ? rDiv.toUpperCase().trim() : "";
             let s = rSub ? rSub.toUpperCase().trim() : "";
             
-            if (d.includes("DETAILED") || d.includes("REPORT") || d.includes("DIVISION") || d.includes("VERTICAL") || d.includes("TARGET")) return true;
+            if (d.includes("DETAILED") || d.includes("REPORT") || d.includes("DIVISION") || d.includes("VERTICAL") || d.includes("TARGET") || d.includes("OFFICE WISE")) return true;
             if (s.includes("DETAILED") || s.includes("REPORT") || s.includes("NAME OF SD") || s.includes("VERTICAL")) return true;
             if (d === "" && s === "") return true; 
             
@@ -263,19 +297,35 @@
                 onDivisionChange();
             }
 
+            const category = document.getElementById('categorySelect').value;
             const divVal = document.getElementById('divisionSelect').value.toUpperCase().trim();
             const subVal = document.getElementById('subDivSelect').value.toUpperCase().trim();
 
             currentlyFilteredRows = loadedSheetRows.filter(row => {
+                if (row._isProcessedTitle) return true; 
+
                 let rDiv = row[idxDivision] ? row[idxDivision].toUpperCase().trim() : "";
                 let rSub = row[idxSubDiv] ? row[idxSubDiv].toUpperCase().trim() : "";
 
                 if (rDiv.includes("GRAND TOTAL") || rSub.includes("GRAND TOTAL") || rDiv === "TOTAL") return false;
-
                 if (isStructuralRow(row[idxDivision], row[idxSubDiv])) return true;
 
                 if (divVal || subVal) {
                     if (rDiv.includes("TOTAL") || rSub.includes("TOTAL")) return false;
+                }
+
+                // 🌟 EXTREME DYNAMIC INTERCEPTOR FOR AUTONOMOUS NIL EXTEND FILTERING
+                if (category.endsWith("_nil")) {
+                    // Check if '1' exists in Nil column or Total count cell has '0' directly
+                    let isZeroBooking = row.some(cell => cell && (cell.toString().trim() === "0" || cell.toString().trim() === "1"));
+                    
+                    // Specific cell check for standard office mapping (Booking = 0 means Nil office)
+                    let bookingCellIdx = row.findIndex(v => v && v.toString().trim() === "0");
+                    if (bookingCellIdx === -1) {
+                        // Backup fallback to Nil flag indicator '1'
+                        let nilFlagIdx = row.findIndex(v => v && v.toString().trim() === "1");
+                        if (nilFlagIdx === -1) return false;
+                    }
                 }
 
                 if (divVal && !rDiv.startsWith(divVal)) return false;
@@ -288,6 +338,7 @@
 
         function renderTable() {
             const container = document.getElementById('table-container');
+            const category = document.getElementById('categorySelect').value;
             
             let html = '<table><thead><tr>';
             globalHeaders.forEach(header => { html += `<th>${header || ''}</th>`; });
@@ -297,13 +348,15 @@
                 let isMainTitleRow = false;
                 let finalTitleText = "";
 
-                // 🌟 LAW AND ORDER IN RENDERING:
-                // Pure row me pehle dhoodho ki kya ye ek title wali block hai
                 for (let i = 0; i < row.length; i++) {
                     let cellVal = row[i] ? row[i].trim() : "";
-                    if (cellVal.toUpperCase().includes("BO WISE") || cellVal.toUpperCase().includes("SO WISE") || cellVal.toUpperCase().includes("DETAILED REPORT")) {
+                    if (cellVal.toUpperCase().includes("BO WISE") || cellVal.toUpperCase().includes("SO WISE") || cellVal.toUpperCase().includes("DETAILED REPORT") || cellVal.toUpperCase().includes("OFFICE WISE")) {
                         isMainTitleRow = true;
-                        finalTitleText = cellVal; // Extract precise title statement like 'BO Wise Detailed Report Speed Post'
+                        finalTitleText = cellVal; 
+                        
+                        if (category.endsWith("_nil")) {
+                            finalTitleText = "List of Offices with NIL Bookings (Indore Region) 🔴";
+                        }
                         break;
                     }
                 }
@@ -321,13 +374,9 @@
 
                 html += `<tr${rowClass}>`;
                 if (isMainTitleRow) {
-                    if (!finalTitleText) {
-                        finalTitleText = row.find(v => v && v.trim() !== "") || "Detailed Report";
-                    }
-                    // CRITICAL FIX: Loop break karke baaki bache columns ko DOM se permanently mita diya!
+                    if (!finalTitleText) finalTitleText = "Detailed Report List";
                     html += `<td colspan="${globalHeaders.length}" style="text-align: center; font-weight: bold; padding: 15px;">${finalTitleText}</td>`;
                 } else {
-                    // Normal execution for data cells
                     globalHeaders.forEach((_, idx) => {
                         html += `<td>${row[idx] !== undefined ? row[idx] : ''}</td>`;
                     });
