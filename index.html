@@ -174,16 +174,38 @@
 
                 let currentRunningDivision = "";
                 loadedSheetRows = rawRows.map(row => {
-                    let divVal = row[idxDivision] ? row[idxDivision].trim() : "";
-                    
-                    let matchedDiv = indoreRegionDivisions.find(d => divVal.toUpperCase().startsWith(d));
-                    if (matchedDiv) {
-                        currentRunningDivision = matchedDiv;
+                    // 🌟 PRE-FILTER & CLEAN DATA JAD SE (ENTRY POINT PAR HI DUPLICATES KHATM)
+                    let isTitleRow = false;
+                    let targetText = "";
+
+                    // Pure row me check karo agar koi cell Title hai, to pure baki row ko clean karo
+                    for (let i = 0; i < row.length; i++) {
+                        let cText = row[i] ? row[i].trim() : "";
+                        if (cText.toUpperCase().includes("BO WISE") || cText.toUpperCase().includes("SO WISE") || cText.toUpperCase().includes("DETAILED REPORT")) {
+                            isTitleRow = true;
+                            targetText = cText;
+                            break;
+                        }
                     }
-                    
-                    let clonedRow = [...row];
-                    if ((!divVal || divVal === "") && currentRunningDivision !== "" && !isStructuralRow(row[idxDivision], row[idxSubDiv])) {
-                        clonedRow[idxDivision] = currentRunningDivision;
+
+                    let clonedRow = [];
+                    if (isTitleRow) {
+                        // Agar title milta hai, to pehle column me Title text set hoga, baki sab 100% Khali!
+                        clonedRow = new Array(globalHeaders.length).fill("");
+                        clonedRow[0] = targetText; 
+                        clonedRow._isProcessedTitle = true; // Flag for Render Engine
+                    } else {
+                        // Normal rows logic
+                        let divVal = row[idxDivision] ? row[idxDivision].trim() : "";
+                        let matchedDiv = indoreRegionDivisions.find(d => divVal.toUpperCase().startsWith(d));
+                        if (matchedDiv) {
+                            currentRunningDivision = matchedDiv;
+                        }
+                        
+                        clonedRow = [...row];
+                        if ((!divVal || divVal === "") && currentRunningDivision !== "" && !isStructuralRow(row[idxDivision], row[idxSubDiv])) {
+                            clonedRow[idxDivision] = currentRunningDivision;
+                        }
                     }
                     return clonedRow;
                 });
@@ -267,11 +289,12 @@
             const subVal = document.getElementById('subDivSelect').value.toUpperCase().trim();
 
             currentlyFilteredRows = loadedSheetRows.filter(row => {
+                if (row._isProcessedTitle) return true; // Title rows are always retained
+
                 let rDiv = row[idxDivision] ? row[idxDivision].toUpperCase().trim() : "";
                 let rSub = row[idxSubDiv] ? row[idxSubDiv].toUpperCase().trim() : "";
 
                 if (rDiv.includes("GRAND TOTAL") || rSub.includes("GRAND TOTAL") || rDiv === "TOTAL") return false;
-
                 if (isStructuralRow(row[idxDivision], row[idxSubDiv])) return true;
 
                 if (divVal || subVal) {
@@ -294,25 +317,13 @@
             html += '</tr></thead><tbody>';
 
             currentlyFilteredRows.forEach(row => {
-                let isMainTitleRow = false;
-                let finalTitleText = "";
-
-                // 🌟 ADVANCED MULTI-MONTH CLEANER ENGINE
-                // Check if any cell starts with 'BO WISE' or 'SO WISE' or matches keywords case-insensitively
-                for (let i = 0; i < row.length; i++) {
-                    let cellVal = row[i] ? row[i].trim().toUpperCase() : "";
-                    if (cellVal.startsWith("BO WISE") || cellVal.startsWith("SO WISE") || cellVal.includes("DETAILED REPORT")) {
-                        isMainTitleRow = true;
-                        finalTitleText = row[i].trim(); // Extract exact original text
-                        break;
-                    }
-                }
-
                 let rDiv = row[idxDivision] ? row[idxDivision].toUpperCase().trim() : "";
                 let rSub = row[idxSubDiv] ? row[idxSubDiv].toUpperCase().trim() : "";
                 
                 let rowClass = "";
-                if (isMainTitleRow || rDiv.includes("VERTICAL") || rDiv.includes("TARGET")) {
+                let isMainTitleRow = false;
+
+                if (row._isProcessedTitle || rDiv.includes("VERTICAL") || rDiv.includes("TARGET")) {
                     rowClass = ' class="excel-header-row"';
                     isMainTitleRow = true;
                 } else if (rDiv.includes("DIVISION") || rSub.includes("NAME OF SD")) {
@@ -321,11 +332,9 @@
 
                 html += `<tr${rowClass}>`;
                 if (isMainTitleRow) {
-                    if (!finalTitleText) {
-                        finalTitleText = row.find(v => v && v.trim() !== "") || "Detailed Report";
-                    }
-                    // Wipe duplicate overflow data horizontally across all months instantly
-                    html += `<td colspan="${globalHeaders.length}" style="text-align: center; font-weight: bold;">${finalTitleText}</td>`;
+                    // Title always stays clean, centered and expands beautifully to full length
+                    let titleText = row[0] || row.find(v => v && v.trim() !== "") || "Detailed Report";
+                    html += `<td colspan="${globalHeaders.length}" style="text-align: center; font-weight: bold;">${titleText}</td>`;
                 } else {
                     globalHeaders.forEach((_, idx) => {
                         html += `<td>${row[idx] !== undefined ? row[idx] : ''}</td>`;
